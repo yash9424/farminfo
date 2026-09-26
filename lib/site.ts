@@ -5,12 +5,13 @@ export const siteConfig = {
   description:
     "Check agricultural crop prices and market yard bhav across Gujarat with FarmInfo.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /** Labels come from the locale dictionary (`t.nav[key]`) */
   nav: [
-    { href: "/", label: "Home" },
-    { href: "/prices", label: "Market Prices" },
-    { href: "/about", label: "About" },
+    { href: "/", key: "home" },
+    { href: "/prices", key: "prices" },
+    { href: "/about", key: "about" },
   ],
-  cta: { href: "/prices", label: "Check Today's Bhav", short: "Today's Bhav" },
+  cta: { href: "/prices" },
 } as const;
 
 /** Open-data source the live provider is built against */

@@ -2,8 +2,10 @@ import { ArrowUpRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/ui/card";
+import { getI18n } from "@/lib/i18n";
 import type { DataSourceInfo, MarketOverview } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { cityLabel, districtLabel } from "@/locales";
 
 /** Headline yards shown on the home page, in display order */
 export const FEATURED_MARKET_IDS = [
@@ -19,7 +21,7 @@ export const FEATURED_MARKET_IDS = [
   "bhavnagar",
 ];
 
-export function MarketGrid({
+export async function MarketGrid({
   markets,
   totalMarkets,
   source,
@@ -28,6 +30,7 @@ export function MarketGrid({
   totalMarkets: number;
   source: DataSourceInfo;
 }) {
+  const { t } = await getI18n();
   return (
     <section
       id="markets"
@@ -43,21 +46,16 @@ export function MarketGrid({
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHeading
             id="markets-title"
-            eyebrow="Market yards"
-            title={<span className="text-white">Markets Across Gujarat</span>}
-            description={
-              <span className="text-cream-300/80">
-                From Saurashtra’s groundnut and cotton hubs to Unjha’s spice yard — explore prices
-                market by market.
-              </span>
-            }
+            eyebrow={t.marketGrid.eyebrow}
+            title={<span className="text-white">{t.marketGrid.title}</span>}
+            description={<span className="text-cream-300/80">{t.marketGrid.description}</span>}
             className="[&>p:first-child]:text-gold-300"
           />
           <Link
             href="/prices"
             className="inline-flex items-center gap-2 self-start rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 md:self-auto"
           >
-            View all {totalMarkets} yards <ArrowUpRight className="size-4" />
+            {t.marketGrid.viewAll(totalMarkets)} <ArrowUpRight className="size-4" />
           </Link>
         </div>
 
@@ -85,14 +83,14 @@ export function MarketGrid({
                 </div>
                 <div className="mt-6">
                   <h3 className="font-display text-[1.2rem] leading-tight [overflow-wrap:anywhere] text-white sm:text-[1.4rem]">
-                    {market.city}
+                    {cityLabel(t, market)}
                   </h3>
                   <p className="mt-1 flex items-center gap-1 text-xs text-cream-300/70">
                     <MapPin className="size-3" aria-hidden />
-                    {market.district} district
+                    {t.format.district(districtLabel(t, market.district))}
                   </p>
                   <p className="mt-4 inline-flex rounded-full bg-white/8 px-2.5 py-1 text-xs font-semibold text-cream-100 tabular">
-                    {cropCount} crops listed
+                    {t.marketGrid.cropsListed(cropCount)}
                   </p>
                 </div>
               </Link>
@@ -100,7 +98,7 @@ export function MarketGrid({
           ))}
         </Stagger>
         <p className="mt-6 text-xs text-cream-300/60">
-          Crop counts reflect the latest date in the {source.isDemo ? "demo dataset" : "data source"}.
+          {source.isDemo ? t.marketGrid.noteDemo : t.marketGrid.noteLive}
         </p>
       </div>
     </section>

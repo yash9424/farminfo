@@ -6,10 +6,12 @@ import * as m from "motion/react-m";
 import { ArrowRight, MapPin, X } from "lucide-react";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { ChangeBadge, DemoBadge } from "@/components/ui/badge";
 import { CropIcon } from "@/components/ui/crop-icon";
 import type { Crop, DataSourceInfo, Market, MarketPrice } from "@/lib/types";
 import { formatINR, formatLongDate, formatUpdated, trendOf } from "@/lib/utils";
+import { cropLabel, districtLabel, marketLabel, sourceText } from "@/locales";
 import { PriceChart } from "./price-chart";
 
 const DESKTOP = "(min-width: 768px)";
@@ -46,7 +48,8 @@ export default function PriceDetails({
   source: DataSourceInfo;
 }) {
   const desktop = useIsDesktop();
-  const cropName = crop?.name ?? price?.cropId ?? "";
+  const { t, locale } = useLanguage();
+  const cropName = cropLabel(t, crop, price?.cropId ?? "");
   const history = price?.history ?? [];
   const weekFirst = history[0]?.modalPrice;
   const weekChange =
@@ -85,13 +88,15 @@ export default function PriceDetails({
                     </Dialog.Title>
                     <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
                       <MapPin className="size-3.5" aria-hidden />
-                      {market?.name ?? price.marketId}
-                      {market && <span className="text-muted/70">· {market.district}</span>}
+                      {marketLabel(t, market, price.marketId)}
+                      {market && (
+                        <span className="text-muted/70">· {districtLabel(t, market.district)}</span>
+                      )}
                     </p>
                   </div>
                   <Dialog.Close
                     className="grid size-10 shrink-0 place-items-center rounded-full bg-forest-900/5 text-ink transition-colors hover:bg-forest-900/10"
-                    aria-label="Close details"
+                    aria-label={t.details.close}
                   >
                     <X className="size-5" />
                   </Dialog.Close>
@@ -101,29 +106,29 @@ export default function PriceDetails({
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <p className="text-[0.6875rem] font-bold tracking-[0.14em] text-muted uppercase">
-                        Modal / average price
+                        {t.details.modalAverage}
                       </p>
                       <p className="mt-1 tabular">
                         <span className="font-display text-5xl leading-none font-medium tracking-tight text-forest-950">
                           {formatINR(price.modalPrice)}
                         </span>
-                        <span className="ml-1.5 text-sm text-muted">/ Quintal</span>
+                        <span className="ml-1.5 text-sm text-muted">{t.common.perQuintal}</span>
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <ChangeBadge value={price.changePercent} />
-                      <span className="text-xs text-muted">vs previous day</span>
+                      <span className="text-xs text-muted">{t.details.vsPrevious}</span>
                     </div>
                   </div>
 
                   <dl className="mt-6 grid grid-cols-2 gap-2.5">
                     {[
-                      ["Minimum price", formatINR(price.minPrice)],
-                      ["Maximum price", formatINR(price.maxPrice)],
-                      ["Variety", price.variety],
-                      ["Unit", "Quintal (100 kg)"],
-                      ["Date", formatLongDate(price.date)],
-                      ["Last updated", formatUpdated(price.updatedAt, price.date)],
+                      [t.details.minimum, formatINR(price.minPrice)],
+                      [t.details.maximum, formatINR(price.maxPrice)],
+                      [t.details.variety, price.variety],
+                      [t.details.unit, t.common.quintalLong],
+                      [t.details.date, formatLongDate(price.date, locale)],
+                      [t.details.lastUpdated, formatUpdated(price.updatedAt, price.date, locale)],
                     ].map(([k, v]) => (
                       <div key={k} className="rounded-2xl border border-line/70 bg-white px-4 py-3">
                         <dt className="text-[0.6875rem] font-bold tracking-[0.12em] text-muted uppercase">{k}</dt>
@@ -137,11 +142,11 @@ export default function PriceDetails({
                   <section aria-labelledby="trend-title" className="mt-7 rounded-3xl border border-line/70 bg-white p-4 sm:p-5">
                     <div className="flex items-center justify-between gap-3">
                       <h3 id="trend-title" className="font-display text-lg text-forest-950">
-                        Price trend · {history.length} days
+                        {t.details.trendTitle(history.length)}
                       </h3>
                       {weekChange !== null && history.length > 1 && (
                         <span className="text-xs text-muted">
-                          Week: <span className="font-semibold text-ink">{weekChange > 0 ? "+" : ""}{weekChange}%</span>
+                          {t.details.week}: <span className="font-semibold text-ink">{weekChange > 0 ? "+" : ""}{weekChange}%</span>
                         </span>
                       )}
                     </div>
@@ -151,16 +156,16 @@ export default function PriceDetails({
                     {values.length > 1 && (
                       <div className="mt-3 grid grid-cols-3 gap-2 border-t border-line pt-3 text-center text-xs text-muted">
                         <p>
-                          Low <span className="block text-sm font-semibold text-ink tabular">{formatINR(Math.min(...values))}</span>
+                          {t.details.low} <span className="block text-sm font-semibold text-ink tabular">{formatINR(Math.min(...values))}</span>
                         </p>
                         <p>
-                          Average{" "}
+                          {t.details.average}{" "}
                           <span className="block text-sm font-semibold text-ink tabular">
                             {formatINR(values.reduce((a, b) => a + b, 0) / values.length)}
                           </span>
                         </p>
                         <p>
-                          High <span className="block text-sm font-semibold text-ink tabular">{formatINR(Math.max(...values))}</span>
+                          {t.details.high} <span className="block text-sm font-semibold text-ink tabular">{formatINR(Math.max(...values))}</span>
                         </p>
                       </div>
                     )}
@@ -168,7 +173,8 @@ export default function PriceDetails({
 
                   <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-cream-200/60 px-4 py-3 text-xs text-muted">
                     <span className="flex items-center gap-2">
-                      Source: <span className="font-semibold text-ink-soft">{source.name}</span>
+                      {t.details.source}:{" "}
+                      <span className="font-semibold text-ink-soft">{sourceText(t, source).name}</span>
                     </span>
                     {source.isDemo && <DemoBadge />}
                   </div>
@@ -178,7 +184,7 @@ export default function PriceDetails({
                     onClick={() => onOpenChange(false)}
                     className="mt-5 flex items-center justify-between rounded-2xl bg-forest-900 px-5 py-4 text-sm font-semibold text-cream-50 transition-colors hover:bg-forest-800"
                   >
-                    Compare {cropName} across all markets
+                    {t.details.compare(cropName)}
                     <ArrowRight className="size-4" aria-hidden />
                   </Link>
                 </div>

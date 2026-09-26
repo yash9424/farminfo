@@ -5,8 +5,9 @@
 /* Deep agricultural greens, warm cream neutrals, earth + gold accents */
 /* ------------------------------------------------------------------ */
 @theme {
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  /* Latin faces first; Gujarati glyphs fall through to the Gujarati faces */
+  --font-sans: var(--font-manrope), var(--font-anek-gujarati), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), var(--font-rasa), ui-serif, Georgia, serif;
 
   --color-forest-50: #f1f8f3;
   --color-forest-100: #dcefe2;
@@ -270,6 +271,29 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Gujarati typography                                                  */
+/* Gujarati has no italics and needs room for matras above/below, so   */
+/* tight tracking, negative letter-spacing and synthetic italics off.  */
+/* ------------------------------------------------------------------ */
+html:lang(gu) :is(h1, h2, h3):not(:lang(en)) {
+  letter-spacing: 0;
+  line-height: 1.24;
+}
+html:lang(gu) :is(em, .italic):not(:lang(en)) {
+  font-style: normal;
+}
+html:lang(gu) [class*="tracking-"]:not(:lang(en)) {
+  letter-spacing: 0.01em;
+}
+html:lang(gu) body {
+  font-feature-settings: normal;
+}
+/* Gujarati glyphs sit smaller than Latin at equal size — lift only the micro labels */
+html:lang(gu) :is([class*="text-[0.625rem]"], [class*="text-[0.6875rem]"]):not(:lang(en)) {
+  font-size: 0.78rem;
 }
 
 .skip-link {

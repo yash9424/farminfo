@@ -6,6 +6,8 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ButtonLink } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -20,6 +22,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [openedOn, setOpenedOn] = useState(pathname);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const { t } = useLanguage();
 
   // close the mobile menu when the route changes
   if (open && openedOn !== pathname) setOpen(false);
@@ -59,10 +62,13 @@ export function Header() {
           : "border-b border-forest-900/8 bg-cream-50/80 shadow-[0_8px_30px_-12px_rgb(13_52_35/0.18)] backdrop-blur-xl backdrop-saturate-150",
       )}
     >
-      <div className="container-x flex h-16 items-center justify-between gap-6 lg:h-[4.5rem]">
-        <Logo tone={overHero ? "light" : "dark"} />
+      <div className="container-x relative flex h-16 items-center justify-between gap-6 lg:h-[4.5rem]">
+        <Logo tone={overHero ? "light" : "dark"} ariaLabel={t.nav.logoAria} />
 
-        <nav aria-label="Primary" className="hidden md:block">
+        <nav
+          aria-label={t.nav.primary}
+          className="hidden md:block lg:absolute lg:left-1/2 lg:-translate-x-1/2"
+        >
           <ul
             className={cn(
               "flex items-center gap-1 rounded-full p-1 transition-colors duration-500",
@@ -97,7 +103,7 @@ export function Header() {
                           : "text-ink-soft hover:text-forest-950",
                     )}
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 </li>
               );
@@ -106,13 +112,14 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle overHero={overHero} className="max-[359px]:hidden" />
           <ButtonLink
             href={siteConfig.cta.href}
             variant={overHero ? "gold" : "primary"}
             size="sm"
             className="hidden h-10 px-5 sm:inline-flex"
           >
-            {siteConfig.cta.short}
+            {t.nav.todayBhav}
             <ArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-0.5" />
           </ButtonLink>
 
@@ -125,7 +132,7 @@ export function Header() {
             }}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
             className={cn(
               "grid size-11 place-items-center rounded-full transition-colors md:hidden",
               overHero
@@ -159,7 +166,7 @@ export function Header() {
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden border-t border-forest-900/8 bg-cream-50 md:hidden"
           >
-            <nav aria-label="Mobile" className="container-x flex h-full flex-col pt-6 pb-8">
+            <nav aria-label={t.nav.mobile} className="container-x flex h-full flex-col pt-6 pb-8">
               <ul className="flex flex-col">
                 {siteConfig.nav.map((item, i) => {
                   const active = isActive(item.href);
@@ -183,7 +190,7 @@ export function Header() {
                             active ? "text-forest-700" : "text-forest-950",
                           )}
                         >
-                          {item.label}
+                          {t.nav[item.key]}
                         </span>
                         <ArrowRight
                           className={cn("size-5", active ? "text-forest-600" : "text-muted")}
@@ -199,16 +206,22 @@ export function Header() {
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="mt-auto"
               >
+                <div className="mb-5">
+                  <p className="mb-2 text-[0.6875rem] font-bold tracking-[0.14em] text-muted uppercase">
+                    {t.language.label}
+                  </p>
+                  <LanguageToggle overHero={false} variant="menu" />
+                </div>
                 <ButtonLink
                   href={siteConfig.cta.href}
                   size="lg"
                   className="w-full"
                   onClick={() => setOpen(false)}
                 >
-                  {siteConfig.cta.label}
+                  {t.nav.checkTodayBhav}
                   <ArrowRight />
                 </ButtonLink>
-                <p className="mt-5 text-center text-sm text-muted">{siteConfig.tagline}</p>
+                <p className="mt-5 text-center text-sm text-muted">{t.common.tagline}</p>
               </m.div>
             </nav>
           </m.div>

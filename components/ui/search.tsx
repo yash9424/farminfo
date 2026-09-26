@@ -2,6 +2,7 @@
 
 import { Search as SearchIcon, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 /** Text search with built-in debounce. `onSearch` fires `delay` ms after typing stops. */
@@ -21,6 +22,7 @@ export function Search({
   className?: string;
 }) {
   const id = useId();
+  const { t } = useLanguage();
   const [text, setText] = useState(value);
   const [synced, setSynced] = useState(value);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -77,7 +79,7 @@ export function Search({
               setText("");
               onSearch("");
             }}
-            aria-label="Clear search"
+            aria-label={t.filters.clearSearch}
             className="absolute top-1/2 right-2.5 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted transition-colors hover:bg-forest-900/6 hover:text-ink"
           >
             <X className="size-4" />

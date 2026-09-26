@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { dictionaries, intlLocale, type Locale } from "@/locales";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,12 +60,12 @@ function dayDiff(aISO: string, bISO: string) {
   );
 }
 
-/** "Today", "Yesterday", or "12 Sep 2026" */
-export function formatDay(iso: string, now: Date = new Date()): string {
+/** "Today", "Yesterday", or "12 Sep 2026" (localised) */
+export function formatDay(iso: string, locale: Locale = "en", now: Date = new Date()): string {
   const diff = dayDiff(todayISO(now), iso);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Yesterday";
-  return new Intl.DateTimeFormat("en-IN", {
+  if (diff === 0) return dictionaries[locale].common.today;
+  if (diff === 1) return dictionaries[locale].common.yesterday;
+  return new Intl.DateTimeFormat(intlLocale(locale), {
     timeZone: "UTC",
     day: "numeric",
     month: "short",
@@ -73,16 +74,16 @@ export function formatDay(iso: string, now: Date = new Date()): string {
 }
 
 /** "12 Sep" for chart axes */
-export function formatShortDay(iso: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+export function formatShortDay(iso: string, locale: Locale = "en"): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
     timeZone: "UTC",
     day: "numeric",
     month: "short",
   }).format(new Date(`${iso}T00:00:00Z`));
 }
 
-export function formatLongDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+export function formatLongDate(iso: string, locale: Locale = "en"): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
     timeZone: "UTC",
     weekday: "short",
     day: "numeric",
@@ -91,8 +92,8 @@ export function formatLongDate(iso: string): string {
   }).format(new Date(`${iso}T00:00:00Z`));
 }
 
-function formatTime(isoDateTime: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+function formatTime(isoDateTime: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
     timeZone: TZ,
     hour: "numeric",
     minute: "2-digit",
@@ -109,10 +110,11 @@ function formatTime(isoDateTime: string): string {
 export function formatUpdated(
   updatedAt: string | null,
   date: string,
+  locale: Locale = "en",
   now: Date = new Date(),
 ): string {
-  const day = updatedAt ? formatDay(todayISO(new Date(updatedAt)), now) : formatDay(date, now);
-  return updatedAt ? `${day}, ${formatTime(updatedAt)}` : day;
+  const day = formatDay(updatedAt ? todayISO(new Date(updatedAt)) : date, locale, now);
+  return updatedAt ? `${day}, ${formatTime(updatedAt, locale)}` : day;
 }
 
 export function slugify(value: string): string {

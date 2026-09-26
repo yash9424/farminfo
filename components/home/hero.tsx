@@ -4,15 +4,17 @@ import { ChangeBadge, DemoBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { CropIcon } from "@/components/ui/crop-icon";
 import { Sparkline } from "@/components/ui/sparkline";
+import { getI18n } from "@/lib/i18n";
 import type { DataSourceInfo, FeaturedPrice } from "@/lib/types";
 import { formatINR, formatUpdated } from "@/lib/utils";
+import { cityLabel, cropLabel, marketLabel, type Dictionary, type Locale } from "@/locales";
 import heroImage from "@/public/images/hero.jpg";
 
 function delay(ms: number) {
   return { "--d": `${ms}ms` } as React.CSSProperties;
 }
 
-export function Hero({
+export async function Hero({
   featured,
   ticker,
   source,
@@ -21,6 +23,7 @@ export function Hero({
   ticker: FeaturedPrice[];
   source: DataSourceInfo;
 }) {
+  const { t, locale } = await getI18n();
   return (
     <section
       aria-labelledby="hero-title"
@@ -29,7 +32,7 @@ export function Hero({
       <div className="hero-zoom absolute inset-0 -z-10">
         <Image
           src={heroImage}
-          alt="Farmland at sunrise with mist over the fields and hills beyond"
+          alt={t.hero.imageAlt}
           fill
           priority
           placeholder="blur"
@@ -57,53 +60,64 @@ export function Hero({
               style={delay(80)}
             >
               <MapPin className="size-3.5" aria-hidden />
-              Gujarat Agriculture Market
+              {t.hero.eyebrow}
             </p>
             <h1
               id="hero-title"
               className="mt-6 text-[2.6rem] leading-[1.02] font-medium tracking-[-0.035em] text-white min-[400px]:text-[3rem] sm:text-[4.25rem] lg:text-[5.25rem]"
             >
               <span className="rise block" style={delay(180)}>
-                Gujarat Na Pak Na Bhav,
+                {t.hero.titleLine1}
               </span>
               <span className="rise block text-gold-200 italic" style={delay(300)}>
-                Have Ekaj Jagyae.
+                {t.hero.titleLine2}
               </span>
             </h1>
             <p
               className="rise mt-6 max-w-xl text-base leading-relaxed text-cream-100/85 sm:text-lg"
               style={delay(440)}
             >
-              Check the latest agricultural crop prices from market yards across Gujarat — simple,
-              fast and easy.
+              {t.hero.description}
             </p>
             <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={delay(560)}>
               <ButtonLink href="/prices" variant="gold" size="lg">
-                Check Today&apos;s Bhav
+                {t.hero.primaryCta}
                 <ArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" />
               </ButtonLink>
               <ButtonLink href="/#markets" variant="glass" size="lg">
-                Explore Market Yards
+                {t.hero.secondaryCta}
               </ButtonLink>
             </div>
           </div>
 
-          {featured && <HeroPriceCard featured={featured} source={source} />}
+          {featured && <HeroPriceCard featured={featured} source={source} t={t} locale={locale} />}
         </div>
       </div>
 
-      {ticker.length > 0 && <Ticker items={ticker} isDemo={source.isDemo} />}
+      {ticker.length > 0 && <Ticker items={ticker} isDemo={source.isDemo} t={t} />}
     </section>
   );
 }
 
-function HeroPriceCard({ featured, source }: { featured: FeaturedPrice; source: DataSourceInfo }) {
+function HeroPriceCard({
+  featured,
+  source,
+  t,
+  locale,
+}: {
+  featured: FeaturedPrice;
+  source: DataSourceInfo;
+  t: Dictionary;
+  locale: Locale;
+}) {
   const { price, crop, market } = featured;
+  const cropName = cropLabel(t, crop);
+  const marketName = marketLabel(t, market);
   return (
     <div className="rise hidden sm:block" style={delay(700)}>
       <div className="animate-float">
         <article
-          aria-label={`Today's market: ${crop.name} at ${market.name}`}
+          aria-label={t.hero.cardAria(cropName, marketName)}
           className="relative w-full max-w-sm rounded-[1.75rem] border border-white/15 bg-white/[0.08] p-2 shadow-float backdrop-blur-2xl"
         >
           <div className="rounded-[1.35rem] bg-cream-50 p-5 text-ink">
@@ -113,7 +127,7 @@ function HeroPriceCard({ featured, source }: { featured: FeaturedPrice; source: 
                   <span className="animate-pulse-ring absolute inset-0 rounded-full bg-forest-500" />
                   <span className="relative size-2 rounded-full bg-forest-500" />
                 </span>
-                Today&apos;s Market
+                {t.hero.todaysMarket}
               </p>
               {source.isDemo && <DemoBadge />}
             </div>
@@ -121,9 +135,9 @@ function HeroPriceCard({ featured, source }: { featured: FeaturedPrice; source: 
             <div className="mt-5 flex items-center gap-3.5">
               <CropIcon cropId={crop.id} size="md" />
               <div className="min-w-0">
-                <p className="font-display text-xl leading-tight text-forest-950">{crop.name}</p>
+                <p className="font-display text-xl leading-tight text-forest-950">{cropName}</p>
                 <p className="truncate text-sm text-muted">
-                  {market.name} · {price.variety}
+                  {marketName} · {price.variety}
                 </p>
               </div>
             </div>
@@ -133,7 +147,7 @@ function HeroPriceCard({ featured, source }: { featured: FeaturedPrice; source: 
                 <span className="font-display text-[2.4rem] leading-none font-medium tracking-tight text-forest-950">
                   {formatINR(price.modalPrice)}
                 </span>
-                <span className="ml-1.5 text-sm text-muted">/ Quintal</span>
+                <span className="ml-1.5 text-sm text-muted">{t.common.perQuintal}</span>
               </p>
               <ChangeBadge value={price.changePercent} />
             </div>
@@ -148,9 +162,9 @@ function HeroPriceCard({ featured, source }: { featured: FeaturedPrice; source: 
 
             <div className="mt-4 flex items-center justify-between border-t border-line pt-3.5 text-xs text-muted">
               <span className="tabular">
-                Range {formatINR(price.minPrice)} – {formatINR(price.maxPrice)}
+                {t.hero.range(formatINR(price.minPrice), formatINR(price.maxPrice))}
               </span>
-              <span>{formatUpdated(price.updatedAt, price.date)}</span>
+              <span>{formatUpdated(price.updatedAt, price.date, locale)}</span>
             </div>
           </div>
         </article>
@@ -159,7 +173,7 @@ function HeroPriceCard({ featured, source }: { featured: FeaturedPrice; source: 
   );
 }
 
-function Ticker({ items, isDemo }: { items: FeaturedPrice[]; isDemo: boolean }) {
+function Ticker({ items, isDemo, t }: { items: FeaturedPrice[]; isDemo: boolean; t: Dictionary }) {
   const row = (hidden: boolean) =>
     items.map(({ price, crop, market }) => (
       <li
@@ -167,8 +181,8 @@ function Ticker({ items, isDemo }: { items: FeaturedPrice[]; isDemo: boolean }) 
         aria-hidden={hidden || undefined}
         className="flex shrink-0 items-center gap-3 px-6 text-sm"
       >
-        <span className="font-semibold text-white">{crop.name}</span>
-        <span className="text-cream-300/60">{market.city}</span>
+        <span className="font-semibold text-white">{cropLabel(t, crop)}</span>
+        <span className="text-cream-300/60">{cityLabel(t, market)}</span>
         <span className="font-semibold text-gold-200 tabular">{formatINR(price.modalPrice)}</span>
         <ChangeBadge value={price.changePercent} size="sm" className="bg-white/10 text-white" />
         <span className="ml-3 size-1 rounded-full bg-white/25" aria-hidden />
@@ -179,7 +193,7 @@ function Ticker({ items, isDemo }: { items: FeaturedPrice[]; isDemo: boolean }) 
     <div className="rise relative border-t border-white/10 bg-forest-950/55 backdrop-blur-md" style={delay(900)}>
       <div className="flex items-center">
         <p className="relative z-10 hidden shrink-0 items-center gap-2 self-stretch border-r border-white/10 bg-forest-950 px-5 text-[0.6875rem] font-bold tracking-[0.2em] text-gold-300 uppercase sm:flex">
-          {isDemo ? "Sample bhav" : "Latest bhav"}
+          {isDemo ? t.hero.tickerSample : t.hero.tickerLatest}
         </p>
         <div className="relative flex-1 overflow-hidden py-3.5 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
           <ul className="marquee-track flex w-max animate-marquee hover:[animation-play-state:paused]">

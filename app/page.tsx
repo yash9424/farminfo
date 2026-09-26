@@ -18,9 +18,6 @@ const TICKER_CROPS = [
   "sesame", "chana", "garlic", "onion", "rice", "maize",
 ];
 
-// Prices change daily; regenerate the page at most every 30 minutes.
-export const revalidate = 1800;
-
 async function loadHomeData() {
   try {
     const [snapshot, ticker, stats, overview] = await Promise.all([

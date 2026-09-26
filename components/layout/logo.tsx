@@ -27,18 +27,21 @@ export function LogoMark({ className }: { className?: string }) {
 export function Logo({
   className,
   tone = "dark",
+  ariaLabel = "FarmInfo home",
 }: {
   className?: string;
   tone?: "dark" | "light";
+  ariaLabel?: string;
 }) {
   return (
     <Link
       href="/"
       className={cn("group inline-flex items-center gap-2.5 rounded-lg", className)}
-      aria-label="FarmInfo home"
+      aria-label={ariaLabel}
     >
       <LogoMark className="transition-transform duration-500 ease-(--ease-out-expo) group-hover:-rotate-6" />
       <span
+        lang="en"
         className={cn(
           "font-display text-[1.35rem] leading-none font-semibold tracking-[-0.03em] transition-colors duration-300",
           tone === "light" ? "text-white" : "text-forest-950",

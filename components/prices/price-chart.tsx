@@ -2,6 +2,7 @@
 
 import * as m from "motion/react-m";
 import { useId, useMemo, useRef, useState } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import type { PricePoint } from "@/lib/types";
 import { cn, formatINR, formatShortDay } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ export function PriceChart({
   trend: "up" | "down" | "flat";
 }) {
   const id = useId();
+  const { t, locale } = useLanguage();
   const svgRef = useRef<SVGSVGElement>(null);
   const [active, setActive] = useState<number | null>(null);
 
@@ -51,7 +53,7 @@ export function PriceChart({
   if (points.length < 2) {
     return (
       <p className="rounded-2xl bg-cream-100 px-4 py-8 text-center text-sm text-muted">
-        Not enough history yet to draw a trend for this entry.
+        {t.chart.notEnough}
       </p>
     );
   }
@@ -78,7 +80,7 @@ export function PriceChart({
   return (
     <figure className="relative">
       <figcaption className="sr-only">
-        {cropName} modal price, last {points.length} days
+        {t.chart.caption(cropName, points.length)}
       </figcaption>
       <div className="relative">
         <svg
@@ -86,9 +88,12 @@ export function PriceChart({
           viewBox={`0 0 ${W} ${H}`}
           className="h-auto w-full touch-pan-y select-none"
           role="img"
-          aria-label={`Line chart of ${cropName} modal price over ${points.length} days, from ${formatINR(
-            points[0].modalPrice,
-          )} to ${formatINR(points[points.length - 1].modalPrice)}`}
+          aria-label={t.chart.aria(
+            cropName,
+            points.length,
+            formatINR(points[0].modalPrice),
+            formatINR(points[points.length - 1].modalPrice),
+          )}
           onPointerMove={(e) => pick(e.clientX)}
           onPointerDown={(e) => pick(e.clientX)}
           onPointerLeave={() => setActive(null)}
@@ -132,7 +137,7 @@ export function PriceChart({
               textAnchor="middle"
               className={cn("text-[11px] tabular", i === shown ? "fill-ink font-semibold" : "fill-muted")}
             >
-              {formatShortDay(p.date)}
+              {formatShortDay(p.date, locale)}
             </text>
           ))}
 
@@ -184,7 +189,7 @@ export function PriceChart({
           aria-hidden
         >
           <p className="text-[10px] font-medium tracking-wide text-cream-300 uppercase">
-            {formatShortDay(points[shown].date)}
+            {formatShortDay(points[shown].date, locale)}
           </p>
           <p className="text-sm font-bold text-white tabular">{formatINR(points[shown].modalPrice)}</p>
         </div>
@@ -192,11 +197,11 @@ export function PriceChart({
 
       {/* table view for screen readers */}
       <table className="sr-only">
-        <caption>{cropName} modal price by day</caption>
+        <caption>{t.chart.tableCaption(cropName)}</caption>
         <thead>
           <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Modal price (₹/quintal)</th>
+            <th scope="col">{t.chart.colDate}</th>
+            <th scope="col">{t.chart.colModal}</th>
           </tr>
         </thead>
         <tbody>

@@ -14,6 +14,7 @@ import type {
   PriceQuery,
   PriceResult,
 } from "@/lib/types";
+import { dictionaries } from "@/locales";
 
 /**
  * Public data API for the UI.
@@ -42,9 +43,17 @@ export const getCrops = cache(async (): Promise<Crop[]> => {
 
 /* ---------- filtering ---------- */
 
+/** Lower-case, strip punctuation; keeps Gujarati letters and vowel signs (\p{M}). */
 function normalise(text: string) {
-  return text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  return text
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
+
+const gu = dictionaries.gu;
 
 function matchesSearch(
   price: MarketPrice,
@@ -61,6 +70,11 @@ function matchesSearch(
       market?.name,
       market?.city,
       market?.district,
+      // Gujarati names, so "ઘઉં" or "રાજકોટ" search too
+      gu.crops[price.cropId],
+      gu.cities[price.marketId],
+      market && gu.districts[market.district],
+      crop && gu.categories[crop.category],
     ]
       .filter(Boolean)
       .join(" "),

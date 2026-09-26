@@ -2,11 +2,20 @@
 
 import { CalendarDays, RotateCcw, Store } from "lucide-react";
 import { useId, useMemo } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { CropIcon } from "@/components/ui/crop-icon";
 import { Search } from "@/components/ui/search";
 import { Select, type SelectOption } from "@/components/ui/select";
 import type { Crop, CropCategory, Market } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import {
+  categoryLabel,
+  cityLabel,
+  cropLabel,
+  dictionaries,
+  districtLabel,
+  intlLocale,
+} from "@/locales";
 import { usePricesState } from "./prices-state";
 
 const CATEGORY_ORDER: CropCategory[] = [
@@ -31,17 +40,23 @@ export function PriceFilters({
   earliestDate: string;
 }) {
   const { filters, setFilters, reset, isPending } = usePricesState();
+  const { t, locale } = useLanguage();
+  const gu = dictionaries.gu;
   const dateId = useId();
 
   const marketOptions = useMemo<SelectOption[]>(
     () =>
-      markets.map((m) => ({
-        value: m.id,
-        label: m.city,
-        hint: m.district !== m.city ? m.district : undefined,
-        keywords: [m.name, m.district],
-      })),
-    [markets],
+      markets
+        .map((m) => ({
+          value: m.id,
+          label: cityLabel(t, m),
+          hint: m.district !== m.city ? districtLabel(t, m.district) : undefined,
+          // searchable in both languages
+          keywords: [m.city, m.name, cityLabel(gu, m)],
+          extraKeywords: [m.district, districtLabel(gu, m.district)],
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, intlLocale(locale))),
+    [markets, t, gu, locale],
   );
 
   const cropOptions = useMemo<SelectOption[]>(
@@ -50,16 +65,16 @@ export function PriceFilters({
         .sort(
           (a, b) =>
             CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) ||
-            a.name.localeCompare(b.name),
+            cropLabel(t, a).localeCompare(cropLabel(t, b), intlLocale(locale)),
         )
         .map((c) => ({
           value: c.id,
-          label: c.name,
-          group: c.category,
-          keywords: c.aliases,
+          label: cropLabel(t, c),
+          group: categoryLabel(t, c.category),
+          keywords: [c.name, ...c.aliases, cropLabel(gu, c)],
           icon: <CropIcon cropId={c.id} size="sm" className="size-7 rounded-lg [&_svg]:size-4" />,
         })),
-    [crops],
+    [crops, t, gu, locale],
   );
 
   const hasFilters = Boolean(filters.market || filters.crop || filters.q || filters.date);
@@ -67,25 +82,25 @@ export function PriceFilters({
   return (
     <div
       role="search"
-      aria-label="Filter market prices"
+      aria-label={t.filters.aria}
       className="rounded-[1.75rem] border border-line/80 bg-cream-50/90 p-3 shadow-lift backdrop-blur-xl sm:p-4"
     >
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1fr_1fr_0.8fr_1.3fr_auto] lg:items-end">
         <Select
-          label="Market yard"
+          label={t.filters.market}
           value={filters.market}
           options={marketOptions}
-          allLabel="All markets"
-          placeholder="Search market or district…"
+          allLabel={t.filters.allMarkets}
+          placeholder={t.filters.marketPlaceholder}
           icon={<Store />}
           onChange={(market) => setFilters({ market })}
         />
         <Select
-          label="Crop"
+          label={t.filters.crop}
           value={filters.crop}
           options={cropOptions}
-          allLabel="All crops"
-          placeholder="Search crop…"
+          allLabel={t.filters.allCrops}
+          placeholder={t.filters.cropPlaceholder}
           onChange={(crop) => setFilters({ crop })}
         />
         <div className="col-span-1">
@@ -93,7 +108,7 @@ export function PriceFilters({
             htmlFor={dateId}
             className="mb-1.5 block text-[0.6875rem] font-bold tracking-[0.14em] text-muted uppercase"
           >
-            Date
+            {t.filters.date}
           </label>
           <div className="relative">
             <CalendarDays
@@ -115,10 +130,10 @@ export function PriceFilters({
           </div>
         </div>
         <Search
-          label="Search"
+          label={t.filters.search}
           value={filters.q}
           onSearch={(q) => setFilters({ q })}
-          placeholder="wheat, rajkot, groundnut…"
+          placeholder={t.filters.searchPlaceholder}
           className="order-first col-span-2 lg:order-none lg:col-span-1"
         />
         <button
@@ -133,7 +148,7 @@ export function PriceFilters({
           )}
         >
           <RotateCcw className={cn("size-4", isPending && "animate-spin [animation-direction:reverse]")} aria-hidden />
-          Reset
+          {t.filters.reset}
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { CloudOff, RotateCcw } from "lucide-react";
 import { useEffect } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -12,6 +13,7 @@ export default function RootError({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  const { t } = useLanguage();
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -23,15 +25,15 @@ export default function RootError({
           icon={CloudOff}
           tone="error"
           role="alert"
-          title="Something went wrong"
-          description="We couldn't load this page. Please try again in a moment."
+          title={t.errors.rootTitle}
+          description={t.errors.rootBody}
           action={
             <>
               <Button onClick={() => retry()}>
-                <RotateCcw /> Try again
+                <RotateCcw /> {t.common.tryAgain}
               </Button>
               <ButtonLink href="/" variant="outline">
-                Back to home
+                {t.common.backHome}
               </ButtonLink>
             </>
           }

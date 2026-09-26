@@ -1,11 +1,15 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { getI18n } from "@/lib/i18n";
 import { getDataSource } from "@/lib/market-data";
 import { siteConfig } from "@/lib/site";
+import { sourceText } from "@/locales";
 import { Logo } from "./logo";
 
-export function Footer() {
+export async function Footer() {
   const source = getDataSource();
+  const { t } = await getI18n();
+  const sourceInfo = sourceText(t, source);
 
   return (
     <footer className="relative overflow-hidden bg-forest-950 text-cream-200">
@@ -17,24 +21,22 @@ export function Footer() {
       <div className="container-x relative pt-16 pb-10 lg:pt-20">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div className="max-w-sm">
-            <Logo tone="light" />
+            <Logo tone="light" ariaLabel={t.nav.logoAria} />
             <p className="mt-5 font-display text-xl leading-snug text-cream-100">
-              {siteConfig.tagline}
+              {t.common.tagline}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-cream-300/70">
-              A simpler way to explore agricultural market-yard prices across Gujarat.
-            </p>
+            <p className="mt-3 text-sm leading-relaxed text-cream-300/70">{t.footer.blurb}</p>
           </div>
 
-          <nav aria-label="Footer">
+          <nav aria-label={t.nav.footer}>
             <h2 className="font-sans text-xs font-bold tracking-[0.2em] text-gold-300 uppercase">
-              Explore
+              {t.footer.explore}
             </h2>
             <ul className="mt-5 space-y-3 text-[0.9375rem]">
               {siteConfig.nav.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="transition-colors hover:text-white">
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 </li>
               ))}
@@ -43,17 +45,17 @@ export function Footer() {
 
           <div>
             <h2 className="font-sans text-xs font-bold tracking-[0.2em] text-gold-300 uppercase">
-              Data
+              {t.footer.data}
             </h2>
             <ul className="mt-5 space-y-3 text-[0.9375rem]">
               <li>
                 <Link href="/about#data" className="transition-colors hover:text-white">
-                  Data Source
+                  {t.footer.dataSource}
                 </Link>
               </li>
               <li>
                 <Link href="/about#disclaimer" className="transition-colors hover:text-white">
-                  Data Disclaimer
+                  {t.footer.dataDisclaimer}
                 </Link>
               </li>
             </ul>
@@ -61,14 +63,11 @@ export function Footer() {
 
           <div className="rounded-2xl border border-white/10 bg-white/4 p-5">
             <p className="text-xs font-bold tracking-[0.2em] text-gold-300 uppercase">
-              Current source
+              {t.footer.currentSource}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-cream-100">{source.name}</p>
+            <p className="mt-3 text-sm leading-relaxed text-cream-100">{sourceInfo.name}</p>
             {source.isDemo ? (
-              <p className="mt-2 text-xs leading-relaxed text-cream-300/70">
-                Prices shown are sample data for demonstration until a verified live source is
-                connected.
-              </p>
+              <p className="mt-2 text-xs leading-relaxed text-cream-300/70">{t.footer.demoNote}</p>
             ) : (
               <a
                 href={source.url}
@@ -76,15 +75,15 @@ export function Footer() {
                 rel="noreferrer"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-gold-300 hover:text-gold-200"
               >
-                View source <ArrowUpRight className="size-3.5" />
+                {t.common.viewSource} <ArrowUpRight className="size-3.5" />
               </a>
             )}
           </div>
         </div>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-cream-300/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 FarmInfo. All rights reserved.</p>
-          <p>Prices are indicative. Always confirm with your market yard before trading.</p>
+          <p>{t.footer.rights}</p>
+          <p>{t.footer.indicative}</p>
         </div>
       </div>
     </footer>

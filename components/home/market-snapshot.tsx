@@ -6,61 +6,74 @@ import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/card";
 import { CropIcon } from "@/components/ui/crop-icon";
 import { Sparkline } from "@/components/ui/sparkline";
+import { getI18n } from "@/lib/i18n";
 import type { DataSourceInfo, FeaturedPrice } from "@/lib/types";
 import { cn, formatINR, formatUpdated } from "@/lib/utils";
+import { categoryLabel, cropLabel, marketLabel, type Dictionary, type Locale } from "@/locales";
 
-export function MarketSnapshot({
+export async function MarketSnapshot({
   items,
   source,
 }: {
   items: FeaturedPrice[];
   source: DataSourceInfo;
 }) {
+  const { t, locale } = await getI18n();
   return (
     <section aria-labelledby="snapshot-title" className="bg-cream-100 pb-20 lg:pb-32">
       <div className="container-x">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHeading
             id="snapshot-title"
-            eyebrow="Market snapshot"
+            eyebrow={t.snapshot.eyebrow}
             title={
               <>
-                Aaj Na <em className="text-forest-600">Market Bhav</em>
+                {t.snapshot.titleA} <em className="text-forest-600">{t.snapshot.titleB}</em>
               </>
             }
-            description="Quickly check what is happening across major agricultural markets."
+            description={t.snapshot.description}
           />
           <div className="flex items-center gap-3">
             {source.isDemo && <DemoBadge />}
             <ButtonLink href="/prices" variant="outline" className="hidden md:inline-flex">
-              All prices <ArrowRight />
+              {t.snapshot.allPrices} <ArrowRight />
             </ButtonLink>
           </div>
         </div>
 
         {items.length === 0 ? (
           <p className="mt-12 rounded-3xl border border-dashed border-line p-10 text-center text-muted">
-            No prices are available right now. Please check again later.
+            {t.snapshot.empty}
           </p>
         ) : (
           <Stagger as="ul" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" stagger={0.07}>
             {items.map((item, i) => (
               <StaggerItem as="li" key={item.price.id}>
-                <SnapshotCard item={item} featured={i === 0} />
+                <SnapshotCard item={item} featured={i === 0} t={t} locale={locale} />
               </StaggerItem>
             ))}
           </Stagger>
         )}
 
         <ButtonLink href="/prices" variant="outline" className="mt-8 w-full md:hidden">
-          View all market prices <ArrowRight />
+          {t.snapshot.viewAll} <ArrowRight />
         </ButtonLink>
       </div>
     </section>
   );
 }
 
-function SnapshotCard({ item, featured }: { item: FeaturedPrice; featured: boolean }) {
+function SnapshotCard({
+  item,
+  featured,
+  t,
+  locale,
+}: {
+  item: FeaturedPrice;
+  featured: boolean;
+  t: Dictionary;
+  locale: Locale;
+}) {
   const { price, crop, market } = item;
   return (
     <Link
@@ -85,10 +98,10 @@ function SnapshotCard({ item, featured }: { item: FeaturedPrice; featured: boole
                 featured ? "text-white" : "text-forest-950",
               )}
             >
-              {crop.name}
+              {cropLabel(t, crop)}
             </h3>
             <p className={cn("text-sm", featured ? "text-cream-300/75" : "text-muted")}>
-              {crop.category}
+              {categoryLabel(t, crop.category)}
             </p>
           </div>
         </div>
@@ -114,7 +127,7 @@ function SnapshotCard({ item, featured }: { item: FeaturedPrice; featured: boole
             {formatINR(price.modalPrice)}
           </span>
           <span className={cn("ml-1 text-sm", featured ? "text-cream-300/75" : "text-muted")}>
-            / Qtl
+            {t.common.perQtl}
           </span>
         </p>
         <ChangeBadge
@@ -138,10 +151,10 @@ function SnapshotCard({ item, featured }: { item: FeaturedPrice; featured: boole
           featured ? "border-white/10 text-cream-300/75" : "border-line text-muted",
         )}
       >
-        <span className="truncate font-medium">{market.name}</span>
+        <span className="truncate font-medium">{marketLabel(t, market)}</span>
         <span className="flex shrink-0 items-center gap-1.5">
           <Clock className="size-3.5" aria-hidden />
-          {formatUpdated(price.updatedAt, price.date)}
+          {formatUpdated(price.updatedAt, price.date, locale)}
         </span>
       </div>
     </Link>

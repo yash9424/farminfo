@@ -4,10 +4,12 @@ import * as m from "motion/react-m";
 import { ChevronDown, SearchX } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Crop, DataSourceInfo, Market, MarketPrice } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { cityLabel, cropLabel, intlLocale } from "@/locales";
 import { PriceCard } from "./price-card";
 import { PriceTable, type SortKey, type SortState } from "./price-table";
 import { usePricesState } from "./prices-state";
@@ -29,6 +31,7 @@ export function PriceResults({
   source: DataSourceInfo;
 }) {
   const { isPending, filters, reset } = usePricesState();
+  const { t, locale } = useLanguage();
   const [sort, setSort] = useState<SortState>({ key: "market", dir: "asc" });
   const [visible, setVisible] = useState(PAGE);
   const [selected, setSelected] = useState<MarketPrice | null>(null);
@@ -50,9 +53,9 @@ export function PriceResults({
     const val = (p: MarketPrice): string | number => {
       switch (sort.key) {
         case "crop":
-          return cropById.get(p.cropId)?.name ?? p.cropId;
+          return cropLabel(t, cropById.get(p.cropId), p.cropId);
         case "market":
-          return marketById.get(p.marketId)?.city ?? p.marketId;
+          return cityLabel(t, marketById.get(p.marketId), p.marketId);
         case "min":
           return p.minPrice;
         case "max":
@@ -66,10 +69,13 @@ export function PriceResults({
     return [...prices].sort((a, b) => {
       const va = val(a);
       const vb = val(b);
-      const c = typeof va === "number" ? va - (vb as number) : va.localeCompare(vb as string);
+      const c =
+        typeof va === "number"
+          ? va - (vb as number)
+          : va.localeCompare(vb as string, intlLocale(locale));
       return c * dir;
     });
-  }, [prices, sort, cropById, marketById]);
+  }, [prices, sort, cropById, marketById, t, locale]);
 
   function onSort(key: SortKey) {
     setSort((s) =>
@@ -100,7 +106,7 @@ export function PriceResults({
       </div>
 
       <p className="sr-only" role="status" aria-live="polite">
-        {isPending ? "Loading prices…" : `${prices.length} price ${prices.length === 1 ? "entry" : "entries"} found`}
+        {isPending ? t.results.loading : t.results.found(prices.length)}
       </p>
 
       <m.div
@@ -114,15 +120,9 @@ export function PriceResults({
           <EmptyState
             icon={SearchX}
             role="status"
-            title="No prices found"
-            description={
-              <>
-                We couldn&apos;t find prices for this combination
-                {filters.q ? <> matching “{filters.q}”</> : null}. Try another market, crop or
-                date — or clear the filters.
-              </>
-            }
-            action={<Button onClick={reset}>Reset filters</Button>}
+            title={t.results.emptyTitle}
+            description={t.results.emptyBody(filters.q || undefined)}
+            action={<Button onClick={reset}>{t.results.resetFilters}</Button>}
           />
         ) : (
           <>
@@ -139,7 +139,7 @@ export function PriceResults({
 
             <div className="lg:hidden">
               <label className="mb-3 flex items-center justify-end gap-2 text-xs font-semibold text-muted">
-                Sort by
+                {t.results.sortLabel}
                 <span className="relative">
                   <select
                     value={`${sort.key}:${sort.dir}`}
@@ -149,12 +149,12 @@ export function PriceResults({
                     }}
                     className="h-9 appearance-none rounded-full border border-line bg-white pr-8 pl-3.5 text-sm font-semibold text-ink"
                   >
-                    <option value="crop:asc">Crop (A–Z)</option>
-                    <option value="market:asc">Market (A–Z)</option>
-                    <option value="modal:desc">Price: high to low</option>
-                    <option value="modal:asc">Price: low to high</option>
-                    <option value="change:desc">Biggest gainers</option>
-                    <option value="change:asc">Biggest fallers</option>
+                    <option value="crop:asc">{t.results.sort.cropAsc}</option>
+                    <option value="market:asc">{t.results.sort.marketAsc}</option>
+                    <option value="modal:desc">{t.results.sort.modalDesc}</option>
+                    <option value="modal:asc">{t.results.sort.modalAsc}</option>
+                    <option value="change:desc">{t.results.sort.changeDesc}</option>
+                    <option value="change:asc">{t.results.sort.changeAsc}</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2" aria-hidden />
                 </span>
@@ -176,11 +176,11 @@ export function PriceResults({
             {sorted.length > visible && (
               <div className="mt-6 flex flex-col items-center gap-2">
                 <Button variant="outline" onClick={() => setVisible((v) => v + PAGE)}>
-                  Show more
+                  {t.results.showMore}
                   <ChevronDown />
                 </Button>
                 <p className="text-xs text-muted tabular">
-                  Showing {rows.length} of {sorted.length}
+                  {t.results.showing(rows.length, sorted.length)}
                 </p>
               </div>
             )}

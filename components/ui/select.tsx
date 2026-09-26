@@ -4,6 +4,7 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { Check, ChevronDown, Search as SearchIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { cn } from "@/lib/utils";
 
 export interface SelectOption {
@@ -13,8 +14,10 @@ export interface SelectOption {
   hint?: string;
   /** Group heading, e.g. crop category */
   group?: string;
-  /** Extra words that should match search */
+  /** Other names for the option itself (e.g. the other language) — ranked like the label */
   keywords?: string[];
+  /** Related words that should also match, ranked last (e.g. district) */
+  extraKeywords?: string[];
   icon?: ReactNode;
 }
 
@@ -43,6 +46,7 @@ export function Select({
   className?: string;
 }) {
   const id = useId();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -57,12 +61,12 @@ export function Select({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [{ value: "", label: allLabel }, ...options];
-    // rank: label starts with query > label contains query > other fields match
+    // rank: name starts with query > name contains query > related fields match
     const rank = (o: SelectOption) => {
-      const label = o.label.toLowerCase();
-      if (label.startsWith(q)) return 0;
-      if (label.includes(q)) return 1;
-      const other = [o.hint, o.group, ...(o.keywords ?? [])].filter(Boolean) as string[];
+      const names = [o.label, ...(o.keywords ?? [])].map((n) => n.toLowerCase());
+      if (names.some((n) => n.startsWith(q))) return 0;
+      if (names.some((n) => n.includes(q))) return 1;
+      const other = [o.hint, o.group, ...(o.extraKeywords ?? [])].filter(Boolean) as string[];
       return other.some((t) => t.toLowerCase().includes(q)) ? 2 : -1;
     };
     return options
@@ -194,7 +198,7 @@ export function Select({
                 aria-controls={listId}
                 aria-activedescendant={filtered[active] ? optionId(active) : undefined}
                 aria-autocomplete="list"
-                aria-label={`Search ${label.toLowerCase()}`}
+                aria-label={t.filters.searchIn(label)}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -213,7 +217,7 @@ export function Select({
               className="max-h-72 overflow-y-auto overscroll-contain p-1.5"
             >
               {filtered.length === 0 && (
-                <li className="px-3 py-6 text-center text-sm text-muted">No matches for “{query}”</li>
+                <li className="px-3 py-6 text-center text-sm text-muted">{t.filters.noMatches(query)}</li>
               )}
               {filtered.map((opt, i) => {
                 const showGroup = !query && opt.group && opt.group !== filtered[i - 1]?.group;

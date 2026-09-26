@@ -1,6 +1,9 @@
+"use client";
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { ComponentProps } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { cn, formatChange, trendOf } from "@/lib/utils";
 
 const badgeVariants = cva(
@@ -44,14 +47,18 @@ export function ChangeBadge({
   size?: "sm" | "md";
   className?: string;
 }) {
+  const { t } = useLanguage();
   const trend = trendOf(value);
   const Icon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Minus;
+  const pct = formatChange(value).replace(/[+-]/, "");
   const label =
     trend === "flat"
       ? value === null
-        ? "No previous price to compare"
-        : "Unchanged from previous day"
-      : `${trend === "up" ? "Up" : "Down"} ${formatChange(value).replace(/[+-]/, "")} from previous day`;
+        ? t.common.noPrevious
+        : t.common.unchanged
+      : trend === "up"
+        ? t.common.changeUp(pct)
+        : t.common.changeDown(pct);
   return (
     <Badge
       tone={trend === "up" ? "up" : trend === "down" ? "down" : "neutral"}
@@ -74,15 +81,16 @@ export function DemoBadge({
   className?: string;
   tone?: "gold" | "glass";
 }) {
+  const { t } = useLanguage();
   return (
     <Badge
       tone={tone}
       size="sm"
       className={cn("uppercase tracking-[0.08em]", className)}
-      title="Sample prices for demonstration — not real market data"
+      title={t.common.demoDataTitle}
     >
       <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden />
-      Demo data
+      {t.common.demoData}
     </Badge>
   );
 }

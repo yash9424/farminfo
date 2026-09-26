@@ -1,18 +1,21 @@
+import { getI18n } from "@/lib/i18n";
 import { GUJARAT_PATH, GUJARAT_VIEWBOX, MARKET_POINTS } from "@/lib/gujarat-map";
 import type { Market } from "@/lib/types";
+import { cityLabel } from "@/locales";
 
 const LABELLED = new Set(["rajkot", "ahmedabad", "unjha", "bhuj", "surat", "bhavnagar", "junagadh", "vadodara", "palanpur"]);
 const REGION_LABELS = [
-  { text: "KUTCH", x: 200, y: 110 },
-  { text: "SAURASHTRA", x: 272, y: 362 },
-  { text: "NORTH", x: 500, y: 150 },
-];
+  { key: "kutch", x: 200, y: 110 },
+  { key: "saurashtra", x: 272, y: 362 },
+  { key: "north", x: 500, y: 150 },
+] as const;
 
 /**
  * Gujarat outline from DataMeet open boundaries (see lib/gujarat-map.ts) with
  * market yards plotted at their towns' coordinates.
  */
-export function GujaratMap({ markets }: { markets: Market[] }) {
+export async function GujaratMap({ markets }: { markets: Market[] }) {
+  const { t } = await getI18n();
   const { width, height } = GUJARAT_VIEWBOX;
   const plotted = markets.filter((m) => MARKET_POINTS[m.id]);
 
@@ -25,10 +28,13 @@ export function GujaratMap({ markets }: { markets: Market[] }) {
         aria-labelledby="gj-map-title"
       >
         <title id="gj-map-title">
-          {`Map of Gujarat showing ${plotted.length} market yards, including ${plotted
-            .slice(0, 6)
-            .map((m) => m.city)
-            .join(", ")}`}
+          {t.map.title(
+            plotted.length,
+            plotted
+              .slice(0, 6)
+              .map((m) => cityLabel(t, m))
+              .join(", "),
+          )}
         </title>
         <defs>
           <linearGradient id="gj-fill" x1="0" y1="0" x2="1" y2="1">
@@ -56,13 +62,13 @@ export function GujaratMap({ markets }: { markets: Market[] }) {
 
         {REGION_LABELS.map((r) => (
           <text
-            key={r.text}
+            key={r.key}
             x={r.x}
             y={r.y}
             textAnchor="middle"
             className="fill-cream-100/35 text-[10px] font-bold tracking-[0.3em]"
           >
-            {r.text}
+            {t.map.regions[r.key]}
           </text>
         ))}
 
@@ -107,7 +113,7 @@ export function GujaratMap({ markets }: { markets: Market[] }) {
                   strokeWidth="3"
                   strokeLinejoin="round"
                 >
-                  {m.city}
+                  {cityLabel(t, m)}
                 </text>
               )}
             </g>
@@ -116,13 +122,13 @@ export function GujaratMap({ markets }: { markets: Market[] }) {
       </svg>
       <figcaption className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-cream-300/70">
         <span className="flex items-center gap-2">
-          <span className="size-2.5 rounded-full bg-gold-300" aria-hidden /> Major market yard
+          <span className="size-2.5 rounded-full bg-gold-300" aria-hidden /> {t.map.major}
         </span>
         <span className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-cream-100/80" aria-hidden /> Other listed yard
+          <span className="size-2 rounded-full bg-cream-100/80" aria-hidden /> {t.map.other}
         </span>
         <span>
-          Boundary:{" "}
+          {t.map.boundary}{" "}
           <a
             href="https://github.com/datameet/maps"
             target="_blank"

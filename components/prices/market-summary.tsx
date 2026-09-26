@@ -1,9 +1,11 @@
 import { Clock, Database, Sprout, Store } from "lucide-react";
 import { DemoBadge } from "@/components/ui/badge";
+import { getI18n } from "@/lib/i18n";
 import type { DataSourceInfo, Market, MarketPrice } from "@/lib/types";
 import { formatLongDate, formatUpdated } from "@/lib/utils";
+import { districtLabel, marketLabel, sourceText } from "@/locales";
 
-export function MarketSummary({
+export async function MarketSummary({
   market,
   prices,
   date,
@@ -14,6 +16,7 @@ export function MarketSummary({
   date: string;
   source: DataSourceInfo;
 }) {
+  const { t, locale } = await getI18n();
   const cropCount = new Set(prices.map((p) => p.cropId)).size;
   const marketCount = new Set(prices.map((p) => p.marketId)).size;
   const latest = prices.reduce<string | null>(
@@ -24,26 +27,28 @@ export function MarketSummary({
   const cards = [
     {
       icon: Store,
-      label: "Selected market",
-      value: market ? market.name : "All markets",
-      sub: market ? `${market.district} district` : `${marketCount} yards in view`,
+      label: t.summary.selectedMarket,
+      value: market ? marketLabel(t, market) : t.summary.allMarkets,
+      sub: market
+        ? t.format.district(districtLabel(t, market.district))
+        : t.summary.yardsInView(marketCount),
     },
     {
       icon: Clock,
-      label: "Last updated",
-      value: prices.length ? formatUpdated(latest, date) : "—",
-      sub: formatLongDate(date),
+      label: t.summary.lastUpdated,
+      value: prices.length ? formatUpdated(latest, date, locale) : "—",
+      sub: formatLongDate(date, locale),
     },
     {
       icon: Sprout,
-      label: "Number of crops",
+      label: t.summary.numberOfCrops,
       value: String(cropCount),
-      sub: `${prices.length} price ${prices.length === 1 ? "entry" : "entries"}`,
+      sub: t.summary.entries(prices.length),
     },
   ];
 
   return (
-    <section aria-label="Summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <section aria-label={t.summary.aria} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {cards.map(({ icon: Icon, label, value, sub }) => (
         <div key={label} className="min-w-0 rounded-3xl border border-line/80 bg-white p-4 shadow-soft sm:p-5">
           <p className="flex items-center gap-2 text-[0.625rem] font-bold tracking-[0.12em] text-muted uppercase sm:text-[0.6875rem]">
@@ -57,10 +62,10 @@ export function MarketSummary({
       <div className="min-w-0 rounded-3xl border border-forest-800 bg-forest-900 p-4 text-cream-100 shadow-soft sm:p-5">
         <p className="flex items-center gap-2 text-[0.6875rem] font-bold tracking-[0.14em] text-gold-300 uppercase">
           <Database className="size-4" aria-hidden />
-          Data source
+          {t.summary.dataSource}
         </p>
         <p className="mt-2.5 line-clamp-2 text-sm leading-snug font-semibold text-white sm:mt-3 sm:text-[0.9375rem]">
-          {source.name}
+          {sourceText(t, source).name}
         </p>
         <div className="mt-2 flex items-center gap-2">
           {source.isDemo ? (
@@ -72,7 +77,7 @@ export function MarketSummary({
               rel="noreferrer"
               className="text-sm text-gold-300 underline-offset-4 hover:underline"
             >
-              View source
+              {t.common.viewSource}
             </a>
           )}
         </div>

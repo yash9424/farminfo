@@ -2,9 +2,11 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Reveal } from "@/components/motion/reveal";
 import { ButtonLink } from "@/components/ui/button";
+import { getI18n } from "@/lib/i18n";
 import ctaImage from "@/public/images/cta.jpg";
 
-export function FinalCTA() {
+export async function FinalCTA() {
+  const { t } = await getI18n();
   return (
     <section aria-labelledby="cta-title" className="bg-cream-100 px-3 py-3 sm:px-5 sm:py-5">
       <div className="relative isolate overflow-hidden rounded-[2rem] sm:rounded-[2.5rem]">
@@ -24,21 +26,21 @@ export function FinalCTA() {
 
         <Reveal className="container-x flex flex-col items-center py-24 text-center sm:py-32 lg:py-40">
           <p className="text-[0.6875rem] font-bold tracking-[0.24em] text-gold-300 uppercase">
-            FarmInfo
+            {t.finalCta.eyebrow}
           </p>
           <h2
             id="cta-title"
             className="mt-5 max-w-4xl text-[2.4rem] leading-[1.02] font-medium text-white sm:text-6xl lg:text-7xl"
           >
-            Know Your Market.
+            {t.finalCta.titleA}
             <br />
-            <em className="text-gold-200">Know Your Price.</em>
+            <em className="text-gold-200">{t.finalCta.titleB}</em>
           </h2>
           <p className="mt-6 max-w-lg text-base leading-relaxed text-cream-100/85 sm:text-lg">
-            Get a clearer view of agricultural market prices across Gujarat.
+            {t.finalCta.description}
           </p>
           <ButtonLink href="/prices" variant="gold" size="lg" className="mt-10">
-            View Market Prices
+            {t.finalCta.button}
             <ArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" />
           </ButtonLink>
         </Reveal>
