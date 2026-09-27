@@ -6,30 +6,33 @@ import { cn } from "@/lib/utils";
 export const buttonVariants = cva(
   [
     "group/btn relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap",
-    "rounded-full font-semibold tracking-[-0.01em] select-none",
+    "rounded-xl font-semibold tracking-[-0.01em] select-none",
     "transition-[background-color,color,box-shadow,transform,border-color] duration-300 ease-(--ease-out-expo)",
-    "active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50",
+    "active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:size-4 [&_svg]:shrink-0",
   ],
   {
     variants: {
       variant: {
+        /** charcoal — the default action */
         primary:
-          "bg-forest-800 text-cream-50 shadow-[0_1px_0_rgb(255_255_255/0.12)_inset,0_10px_24px_-10px_rgb(13_52_35/0.6)] hover:bg-forest-700 hover:shadow-[0_1px_0_rgb(255_255_255/0.12)_inset,0_16px_32px_-12px_rgb(13_52_35/0.7)]",
-        gold:
-          "bg-gold-400 text-forest-950 shadow-[0_1px_0_rgb(255_255_255/0.4)_inset,0_10px_28px_-10px_rgb(207_158_23/0.7)] hover:bg-gold-300",
-        glass:
-          "border border-white/25 bg-white/10 text-white backdrop-blur-md hover:border-white/40 hover:bg-white/18",
+          "bg-graphite-950 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] hover:bg-graphite-800",
+        /** safety orange — the single most important action on a view */
+        accent:
+          "bg-accent-500 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_8px_22px_-10px_rgb(242_113_28/0.8)] hover:bg-accent-600",
         outline:
-          "border border-forest-900/15 bg-white/60 text-forest-900 hover:border-forest-900/30 hover:bg-white",
-        ghost: "text-forest-900 hover:bg-forest-900/5",
-        light: "bg-cream-50 text-forest-900 hover:bg-white shadow-soft",
+          "border border-line-strong bg-white text-ink hover:border-graphite-400 hover:bg-graphite-50",
+        ghost: "text-ink hover:bg-graphite-100",
+        /** translucent — on dark imagery */
+        glass:
+          "border border-white/20 bg-white/10 text-white backdrop-blur-md hover:border-white/35 hover:bg-white/16",
+        light: "bg-white text-graphite-950 hover:bg-graphite-100",
       },
       size: {
-        sm: "h-9 px-4 text-sm",
+        sm: "h-9 px-3.5 text-sm",
         md: "h-11 px-5 text-[0.9375rem]",
-        lg: "h-13 px-7 text-base",
-        icon: "size-11",
+        lg: "h-13 px-6 text-base",
+        icon: "size-10",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },
@@ -45,16 +48,9 @@ export function Button({
   type = "button",
   ...props
 }: ComponentProps<"button"> & Variants) {
-  return (
-    <button type={type} className={cn(buttonVariants({ variant, size }), className)} {...props} />
-  );
+  return <button type={type} className={cn(buttonVariants({ variant, size }), className)} {...props} />;
 }
 
-export function ButtonLink({
-  className,
-  variant,
-  size,
-  ...props
-}: ComponentProps<typeof Link> & Variants) {
+export function ButtonLink({ className, variant, size, ...props }: ComponentProps<typeof Link> & Variants) {
   return <Link className={cn(buttonVariants({ variant, size }), className)} {...props} />;
 }

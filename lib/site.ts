@@ -23,21 +23,20 @@ function resolveSiteUrl(): string {
 }
 
 export const siteConfig = {
-  name: "FarmInfo",
-  tagline: "Gujarat Na Pak Na Bhav — Ekaj Jagyae.",
-  title: "FarmInfo — Gujarat Market Yard Bhav",
+  name: "MachInfo",
+  positioning: "CNC & VMC Machine Parts Marketplace",
+  tagline: "Find the Right Part for Your Machine.",
+  title: "MachInfo — CNC & VMC Machine Parts Marketplace in India",
   description:
-    "Check agricultural crop prices and market yard bhav across Gujarat with FarmInfo.",
+    "Find CNC & VMC machine parts, spares and components from sellers across India. Search spindles, servo motors, ball screws, controllers, tool holders and more by category and location.",
   url: resolveSiteUrl(),
-  /** Labels come from the locale dictionary (`t.nav[key]`) */
   nav: [
-    { href: "/", key: "home" },
-    { href: "/prices", key: "prices" },
-    { href: "/about", key: "about" },
+    { href: "/", label: "Home" },
+    { href: "/parts", label: "Parts" },
+    { href: "/categories", label: "Categories" },
+    { href: "/locations", label: "Locations" },
+    { href: "/about", label: "About" },
   ],
-  cta: { href: "/prices" },
+  listCta: { href: "/list-your-part", label: "List Your Part" },
+  popularSearches: ["Spindle", "Servo Motor", "Ball Screw", "CNC Controller", "Tool Holder", "Linear Guideway", "CNC Chuck"],
 } as const;
-
-/** Open-data source the live provider is built against */
-export const AGMARKNET_SOURCE_URL =
-  "https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi";

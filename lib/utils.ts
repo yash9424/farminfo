@@ -1,12 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { dictionaries, intlLocale, type Locale } from "@/locales";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-const TZ = "Asia/Kolkata";
 
 const inr = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -14,113 +11,66 @@ const inr = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
-/** ₹2,450 — Indian digit grouping (₹1,84,500) */
+/** ₹18,50,000 — Indian digit grouping */
 export function formatINR(value: number): string {
   return inr.format(value);
 }
 
-/** 2.4 → "+2.4%", -0.8 → "-0.8%", null → "—" */
-export function formatChange(value: number | null): string {
-  if (value === null || Number.isNaN(value)) return "—";
-  if (Math.abs(value) < 0.05) return "0.0%";
-  const abs = Math.abs(value).toFixed(1);
-  return `${value > 0 ? "+" : "-"}${abs}%`;
+/** ₹18.5 L / ₹1.2 Cr — compact Indian units for chips and filters */
+export function formatINRCompact(value: number): string {
+  if (value >= 1_00_00_000) return `₹${trim(value / 1_00_00_000)} Cr`;
+  if (value >= 1_00_000) return `₹${trim(value / 1_00_000)} L`;
+  if (value >= 1_000) return `₹${trim(value / 1_000)}K`;
+  return `₹${value}`;
 }
 
-export type Trend = "up" | "down" | "flat";
-
-export function trendOf(change: number | null): Trend {
-  if (change === null || Math.abs(change) < 0.05) return "flat";
-  return change > 0 ? "up" : "down";
+function trim(n: number) {
+  return (Math.round(n * 100) / 100).toString();
 }
 
-/** YYYY-MM-DD for "now" in Gujarat (IST), independent of server timezone */
-export function todayISO(now: Date = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+export const PRICE_TYPE_LABEL = {
+  fixed: "Fixed price",
+  negotiable: "Negotiable",
+  on_request: "Price on request",
+} as const;
+
+export const CONDITION_LABEL = {
+  new: "New",
+  used: "Used",
+  refurbished: "Refurbished",
+} as const;
+
+export const SELLER_TYPE_LABEL = {
+  dealer: "Dealer",
+  manufacturer: "Manufacturer",
+  owner: "Direct owner",
+} as const;
+
+/** "3 days ago", "2 months ago" — relative to `now` */
+export function timeAgo(iso: string, now: Date = new Date()): string {
+  const seconds = Math.max(0, (now.getTime() - Date.parse(iso)) / 1000);
+  const units: [number, string][] = [
+    [31_536_000, "year"],
+    [2_592_000, "month"],
+    [604_800, "week"],
+    [86_400, "day"],
+    [3_600, "hour"],
+    [60, "minute"],
+  ];
+  for (const [size, name] of units) {
+    const n = Math.floor(seconds / size);
+    if (n >= 1) return `${n} ${name}${n > 1 ? "s" : ""} ago`;
+  }
+  return "just now";
 }
 
-export function addDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-export function isISODate(value: string | undefined | null): value is string {
-  return !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
-}
-
-function dayDiff(aISO: string, bISO: string) {
-  return Math.round(
-    (Date.parse(`${aISO}T00:00:00Z`) - Date.parse(`${bISO}T00:00:00Z`)) / 86_400_000,
+/** "Sep 2024" */
+export function formatMonthYear(iso: string): string {
+  return new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric", timeZone: "UTC" }).format(
+    new Date(iso),
   );
 }
 
-/** "Today", "Yesterday", or "12 Sep 2026" (localised) */
-export function formatDay(iso: string, locale: Locale = "en", now: Date = new Date()): string {
-  const diff = dayDiff(todayISO(now), iso);
-  if (diff === 0) return dictionaries[locale].common.today;
-  if (diff === 1) return dictionaries[locale].common.yesterday;
-  return new Intl.DateTimeFormat(intlLocale(locale), {
-    timeZone: "UTC",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(`${iso}T00:00:00Z`));
-}
-
-/** "12 Sep" for chart axes */
-export function formatShortDay(iso: string, locale: Locale = "en"): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), {
-    timeZone: "UTC",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(`${iso}T00:00:00Z`));
-}
-
-export function formatLongDate(iso: string, locale: Locale = "en"): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), {
-    timeZone: "UTC",
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(`${iso}T00:00:00Z`));
-}
-
-function formatTime(isoDateTime: string, locale: Locale): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), {
-    timeZone: TZ,
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })
-    .format(new Date(isoDateTime))
-    .replace(/\b(am|pm)\b/i, (m) => m.toUpperCase());
-}
-
-/**
- * "Today, 10:42 AM" — when the source only provides a date, the time is omitted
- * rather than invented.
- */
-export function formatUpdated(
-  updatedAt: string | null,
-  date: string,
-  locale: Locale = "en",
-  now: Date = new Date(),
-): string {
-  const day = formatDay(updatedAt ? todayISO(new Date(updatedAt)) : date, locale, now);
-  return updatedAt ? `${day}, ${formatTime(updatedAt, locale)}` : day;
-}
-
-export function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/\(.*?\)/g, " ")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+export function plural(n: number, one: string, many = `${one}s`) {
+  return `${n.toLocaleString("en-IN")} ${n === 1 ? one : many}`;
 }

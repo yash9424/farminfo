@@ -1,39 +1,36 @@
 "use client";
 
-import { CloudOff, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useEffect } from "react";
-import { useLanguage } from "@/components/i18n/language-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export default function RootError({
-  error,
-  retry,
-}: {
-  error: Error & { digest?: string };
-  retry: () => void;
-}) {
-  const { t } = useLanguage();
+export default function RootError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
 
   return (
-    <div className="bg-cream-100 pt-32 pb-24">
+    <div className="bg-canvas pt-28 pb-24">
       <div className="container-x">
         <EmptyState
-          icon={CloudOff}
+          icon={AlertTriangle}
           tone="error"
           role="alert"
-          title={t.errors.rootTitle}
-          description={t.errors.rootBody}
+          title="Something went wrong while loading parts."
+          description={
+            <>
+              This is usually temporary — please try again.
+              {error.digest && <span className="mt-2 block text-xs text-muted/80">Reference: {error.digest}</span>}
+            </>
+          }
           action={
             <>
               <Button onClick={() => retry()}>
-                <RotateCcw /> {t.common.tryAgain}
+                <RotateCcw /> Retry
               </Button>
               <ButtonLink href="/" variant="outline">
-                {t.common.backHome}
+                Back to home
               </ButtonLink>
             </>
           }

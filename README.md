@@ -1,81 +1,64 @@
-# FarmInfo
+# MachInfo
 
-**Gujarat Na Pak Na Bhav — Ekaj Jagyae.**
+**CNC & VMC Machine Parts Marketplace** — *Find the Right Part for Your Machine.*
 
-A frontend-only Next.js site for checking agricultural market-yard (APMC) prices across Gujarat.
-
-- `/` — Home: hero, coverage stats, today's market snapshot, how it works, market yards
-- `/prices` — Market dashboard: filter by market, crop, date and free text; sortable table on desktop, cards on mobile, price details with a 7-day chart
-- `/about` — Purpose, capabilities, Gujarat map, data transparency
+MachInfo is an India-wide marketplace/directory for CNC & VMC machine **parts, spares, components and accessories** (never complete machines). Buyers search for a part, check specifications, compatibility, price and seller location, and **contact the seller**. There is no cart, checkout or payment.
 
 ## Run it
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev          # http://localhost:3000
 npm run lint
 npm run build && npm start
 ```
 
-Requires Node 20.9+.
+## Pages
 
-## Data
+| Route | Purpose |
+|---|---|
+| `/` | Hero search (keyword + state), popular searches, categories, featured parts, states, industrial cities, why/how, seller CTA |
+| `/parts` | Marketplace: filters (search, category, part type, State → District → City, condition, price, brand, availability), sort, grid/list, pagination — all in the URL |
+| `/parts/[slug]` | Part detail: gallery (fullscreen, zoom, keyboard, swipe), specs, compatibility, seller card, Contact Seller / Send Enquiry, related parts |
+| `/categories`, `/categories/[slug]` | Category index; group or part-type listing |
+| `/locations`, `/locations/[state]`, `/[district]`, `/[city]` | Location hierarchy for any state/district/city in the catalogue |
+| `/about`, `/list-your-part` | About + buyer safety; seller listing form (demo) |
 
-The UI never talks to a data source directly. Everything goes through one module:
-
-```
-lib/market-data.ts          ← the only data API the UI imports
-  getMarkets() getCrops() getMarketPrices() getPricesByMarket() getPricesByCrop()
-  getFeaturedPrices() getMarketOverview() getDatasetStats() getDataSource()
-
-lib/data/provider.ts        ← MarketDataProvider interface (implement this for a new source)
-lib/data/index.ts           ← picks the provider from server-side env vars
-lib/data/demo-provider.ts   ← generated sample data (default)
-lib/data/agmarknet-provider.ts ← live AGMARKNET / data.gov.in provider
-lib/data/catalog.ts         ← crop + market reference catalogue, name matching
-lib/types.ts                ← Market, Crop, MarketPrice, …
-```
-
-### Demo mode (default)
-
-With no configuration FarmInfo runs on a **generated, deterministic demo dataset** — 30 Gujarat APMCs and 19 crops, with plausible prices. These are **not real prices**. Every place prices are shown carries a "Demo data" badge, and the About page and footer say so.
-
-### Live mode (AGMARKNET via data.gov.in)
-
-The live provider targets the Government of India open dataset
-[Current Daily Price of Various Commodities from Various Markets (Mandi)](https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi)
-(resource `9ef84268-d588-465a-a308-a864a43d0070`), filtered to Gujarat.
-
-1. Register at <https://www.data.gov.in> and generate an API key (My Account).
-2. Copy `.env.example` to `.env.local` and set `DATA_GOV_IN_API_KEY=...`.
-3. Restart. The site switches to live data automatically; demo badges disappear and the source is shown.
-
-The key is read **only on the server** (`server-only` modules, fetched in Server Components) and is never shipped to the browser. Responses are cached for an hour (`next: { revalidate: 3600 }`).
-
-Notes on the live dataset:
-- It publishes arrival **dates**, not timestamps, so "last updated" shows the date only.
-- It typically holds only recent days, so the 7-day trend and day-on-day change use whatever history the API returns (shown as "—" when there is no previous day).
-- Commodity names like `Cummin Seed(Jeera)` are mapped to catalogue crops in `lib/data/catalog.ts` (`matchCatalogCrop`). Unknown commodities still appear, under "Other".
-
-If the live source fails, `/prices` shows an error state with retry. Home and About keep working, with their price sections empty. The site never silently falls back to fake prices.
-
-### Adding another source
-
-Implement `MarketDataProvider` (three methods: `getMarkets`, `getCrops`, `getDay`) and register it in `lib/data/index.ts`. No UI changes are needed.
-
-## Project structure
+## Architecture
 
 ```
-app/                      routes, metadata, sitemap, robots, OG image, error/loading/404
-components/layout/        Header, Footer, Logo
-components/home/          Hero, Stats, MarketSnapshot, HowItWorks, FeatureSection, MarketGrid, FinalCTA
-components/prices/        PriceFilters, MarketSummary, PriceTable, PriceCard, PriceDetails, PriceChart, state
-components/about/         GujaratMap
-components/ui/            Button, Card, Badge, Select (searchable), Search (debounced), Skeleton, EmptyState, CropIcon, Sparkline
-components/motion/        Motion provider (lazy-loaded features), Reveal/Stagger, CountUp
+lib/parts.ts                 ← the ONLY data API the UI imports
+  getParts() getPartBySlug() getFeaturedParts() getPartsByCategory() getPartsByLocation()
+  searchParts() getRelatedParts() getCategories() getStates() getDistricts() getCities()
+  getBrands() submitEnquiry() …
+lib/data/provider.ts         ← PartsDataProvider interface (the backend seam)
+lib/data/index.ts            ← provider registry (MACHINFO_DATA_PROVIDER)
+lib/data/demo/               ← demo provider + generated dataset + image pools
+lib/data/catalog/            ← category tree, India location hierarchy (all 36 states/UTs)
+lib/types.ts                 ← Part, Category, Brand, Seller, State, District, City, …
+lib/query-params.ts          ← URL ⇄ PartQuery (shareable filtered URLs)
+app/actions/                 ← server actions: enquiry, listing submission
+app/api/search/route.ts      ← suggestions for the global search panel
 ```
+
+- `Part.specifications` is `Record<string, string>` — each part type has its own fields.
+- `Part.compatibility` holds `cncControls`, `machineModels`, `machineBrands`.
+- Categories are a tree (`parentId`) and locations a strict `Country → State → District → City` hierarchy; both are data, not code.
+
+## Demo data
+
+All listings are **generated demo data** (`isDemo: true`) and labelled "Demo listing / Demo data" in the UI:
+96 parts across 11 category groups, 20 fictional sellers in 10 states. Sellers have **no contact details**; prices and part numbers are illustrative (part numbers deliberately don't follow any manufacturer's real numbering). Manufacturer names (FANUC, Siemens, HIWIN, …) identify part types/compatibility only. Enquiries and listing submissions show a demo success state and send nothing.
+
+## Connecting a backend
+
+1. Implement `PartsDataProvider` (`lib/data/provider.ts`) against your REST/GraphQL API, Supabase, MongoDB or Postgres — keep secrets server-side.
+2. Register it in `lib/data/index.ts` and set `MACHINFO_DATA_PROVIDER`.
+3. `submitEnquiry` is where leads go (CRM/email/WhatsApp API); `app/actions/listing.ts` is where new listings + image uploads plug in.
+4. For large catalogues, add `queryParts(query)` to the provider and delegate from `getParts()` so filtering/pagination run in the database.
+
+No UI changes are needed.
 
 ## Credits
 
-- Photography: Unsplash (Unsplash License) — see `public/images/CREDITS.json`.
-- Gujarat boundary: [DataMeet maps](https://github.com/datameet/maps), CC BY 2.5 India (generated into `lib/gujarat-map.ts`).
+Photography: Unsplash (Unsplash License) and Wikimedia Commons (CC BY) — see `public/images/mi/CREDITS.json`.

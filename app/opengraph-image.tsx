@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "FarmInfo — Gujarat Na Pak Na Bhav, Ekaj Jagyae.";
+export const alt = "MachInfo — CNC & VMC Machine Parts Marketplace";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -15,44 +15,32 @@ export default function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background: "linear-gradient(135deg, #0d3423 0%, #072016 60%, #12432e 100%)",
-          color: "#fbf8f0",
-          fontFamily: "Georgia, serif",
+          color: "#ffffff",
+          fontFamily: "sans-serif",
+          backgroundColor: "#0b0d10",
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 18,
-              background: "#1f6b47",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="40" height="40" viewBox="0 0 32 32">
-              <path d="M16 25.5V13.2" stroke="#efcd55" strokeWidth="2" strokeLinecap="round" />
-              <path d="M16 15.4c0-4.3 2.7-7.2 7.2-7.6.2 4.4-2.6 7.6-7.2 7.6Z" fill="#efcd55" />
-              <path d="M16 19.6c0-3.6-2.3-6-6-6.3-.2 3.7 2.2 6.3 6 6.3Z" fill="#fbf8f0" />
-            </svg>
-          </div>
-          <div style={{ fontSize: 44, fontWeight: 600, display: "flex" }}>
-            Farm<span style={{ color: "#efcd55" }}>Info</span>
+          <svg width="64" height="64" viewBox="0 0 32 32">
+            <rect width="32" height="32" rx="8" fill="#1d2127" />
+            <path d="M9 23V10.5l7 7 7-7V23" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="16" cy="17.5" r="2.1" fill="#f2711c" />
+          </svg>
+          <div style={{ display: "flex", fontSize: 46, fontWeight: 800, letterSpacing: -1.5 }}>
+            Mach<span style={{ color: "#f2711c" }}>Info</span>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 22, letterSpacing: 6, color: "#efcd55", fontFamily: "sans-serif" }}>
-            GUJARAT MARKET YARD BHAV
-          </div>
-          <div style={{ fontSize: 84, lineHeight: 1.04, marginTop: 20, display: "flex", flexDirection: "column" }}>
-            <span>Gujarat Na Pak Na Bhav,</span>
-            <span style={{ color: "#f5e08c", fontStyle: "italic" }}>Have Ekaj Jagyae.</span>
+          <div style={{ fontSize: 22, letterSpacing: 5, color: "#fb8636" }}>CNC &amp; VMC MACHINE PARTS MARKETPLACE</div>
+          <div style={{ fontSize: 80, fontWeight: 800, lineHeight: 1.05, marginTop: 18, letterSpacing: -2 }}>
+            Find the Right Part for Your Machine.
           </div>
         </div>
-        <div style={{ fontSize: 26, color: "#d9cba8", fontFamily: "sans-serif" }}>
-          Check agricultural crop prices across Gujarat market yards.
+        <div style={{ fontSize: 26, color: "#b9c0ca" }}>
+          Spindles · Servo motors · Ball screws · CNC controls · Tool holders — sellers across India
         </div>
       </div>
     ),

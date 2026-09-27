@@ -1,27 +1,25 @@
-import { ArrowRight, Sprout } from "lucide-react";
+import { ArrowRight, SearchX } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
-import { getI18n } from "@/lib/i18n";
 
-export default async function NotFound() {
-  const { t } = await getI18n();
+export default function NotFound() {
   return (
-    <section className="relative flex min-h-[80svh] items-center overflow-hidden bg-forest-950 pt-24 text-white">
-      <div aria-hidden className="bg-dots absolute inset-0 opacity-50" />
+    <section className="relative flex min-h-[78svh] items-center overflow-hidden bg-graphite-950 pt-24 text-white">
+      <div aria-hidden className="bg-blueprint absolute inset-0" />
       <div className="container-x relative flex flex-col items-center text-center">
-        <span className="grid size-16 place-items-center rounded-2xl bg-white/8 text-gold-300 ring-1 ring-white/15">
-          <Sprout className="size-7" aria-hidden />
+        <span className="grid size-14 place-items-center rounded-2xl bg-white/8 text-accent-400 ring-1 ring-white/15">
+          <SearchX className="size-6" aria-hidden />
         </span>
-        <p className="mt-8 font-display text-8xl text-gold-200/90">404</p>
-        <h1 className="mt-4 text-3xl font-medium sm:text-4xl">{t.errors.notFoundTitle}</h1>
-        <p className="mt-4 max-w-md text-cream-100/75">
-          {t.errors.notFoundBody}
+        <p className="mt-8 text-7xl font-extrabold tracking-tight text-white/90 tabular">404</p>
+        <h1 className="mt-3 text-3xl font-bold">This part isn’t in stock here.</h1>
+        <p className="mt-3 max-w-md text-graphite-300">
+          The page you were looking for doesn’t exist, or the listing has been removed.
         </p>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <ButtonLink href="/prices" variant="gold" size="lg">
-            {t.nav.checkTodayBhav} <ArrowRight />
+        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+          <ButtonLink href="/parts" variant="accent" size="lg">
+            Find Parts <ArrowRight />
           </ButtonLink>
           <ButtonLink href="/" variant="glass" size="lg">
-            {t.common.backHome}
+            Back to home
           </ButtonLink>
         </div>
       </div>
